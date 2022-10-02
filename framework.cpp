@@ -16,43 +16,58 @@ Framework::~Framework()
 }
 
 void Framework::FileOpen(){
-    /*Trying to read example strings from an example binary when 'opening' a file, but permission issues galore.
-     * Developing this on Windows 10 too since I am waiting on VMWare license to be renewed. Stay tuned.
-        - Rebecca*/
-    //std::ofstream f;
-    //f.open("./bbbbloat");
-    //f.close();
-    //system("strings bbbbloat");
-    //std::ifstream stringsFile;
-    //std::string line;
-    //stringsFile.open("./strings.txt");
-    //while (std::getline(stringsFile, line))
-    //{
-        //qDebug() << "WORK";
-        //qDebug() << &line ;
-    //}
-    //stringsFile.close();
-    /*
+    /*Any ELF file can now be opened and read from the file explorer to read the strings.
+     * - Rebecca*/
+    QFileDialog dialog(this);
+    dialog.setFileMode(QFileDialog::ExistingFile);
+    QString fName = dialog.getOpenFileName();
+    dialog.close();
+    std::string command = "strings "+fName.toStdString()+" > strings.txt";
+    system(command.c_str());
     qDebug() << QDir::currentPath();
-    QFile f("strings.txt");
+    QFile f(QString(QCoreApplication::applicationDirPath() + "/strings.txt"));
     if (!f.open(QIODevice::ReadOnly))
         qDebug() << "NO";
-        return;
     qDebug() << "you just opened up";
     QTextStream stringsFile(&f);
     for (QString line = stringsFile.readLine();
          !line.isNull();
          line = stringsFile.readLine()) {
-         qDebug() << "WORK";
-         qDebug() << &line ;
+         ui->stringsBox->append(line + "\n");
     };
-    */
-    /*Okay this is just to test that adding the strings actually works the way it is intended in the GUI
-        - Rebecca*/
-    QString test[3] = {"test1", "test2", "test3"};
-    for(int i = 0; i < sizeof(test)/sizeof(test[0]); i++){
+    f.close();
 
-         ui->stringsBox->append(test[i] + "\n");
+    QFile f2(fName);
+    if (!f2.open(QIODevice::ReadOnly))
+        qDebug() << "NO STILL";
+    qDebug() << "you opened up again? ugh";
+    QByteArray data = f2.read(f2.size());
+    this->FileHeader(data[4]);
+    this->CalculateMD5(data, f2.size());
+    f2.close();
+}
+
+void Framework::FileHeader(int b){
+    /*Is the ELF file 32-bit or 64-bit based on the file header?
+     * - Rebecca*/
+    qDebug() << b;
+    if(b == 1){
+        qDebug() << "32 Bit";
+    }
+
+    else {
+        qDebug() << "64 Bit";
     }
 }
 
+void Framework::CalculateMD5(QByteArray d, int sz){
+    /*Calculates the MD5 hash supposedly.
+     * - Rebecca*/
+    QString hash;
+    char buf[32];
+    for(int i = 0; i < sz; i++){
+        sprintf(buf, "%02x", d[i]);
+        hash.append(buf);
+    }
+    qDebug() << hash;
+}

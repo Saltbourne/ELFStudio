@@ -6,6 +6,8 @@
 #include <QTextEdit>
 #include <QDebug>
 #include <QFile>
+#include <QFileDialog>
+#include <QByteArray>
 #include <QDir>
 #include <iostream>
 #include <fstream>
@@ -23,6 +25,8 @@ public:
     Framework(QWidget *parent = nullptr);
     ~Framework();
     void FileOpen();
+    void FileHeader(int f);
+    void CalculateMD5(QByteArray data, int sz);
 
 private:
     Ui::Framework *ui;

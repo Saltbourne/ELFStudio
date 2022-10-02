@@ -40,6 +40,34 @@
      </property>
      <layout class="QVBoxLayout" name="verticalLayout">
       <item>
+       <widget class="QPushButton" name="mainButton">
+        <property name="text">
+         <string>Main</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="sectionButton">
+        <property name="text">
+         <string>Sections</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="importButton">
+        <property name="text">
+         <string>Imports</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="libraryButton">
+        <property name="text">
+         <string>Libraries</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QPushButton" name="stringsButton">
         <property name="text">
          <string>Strings</string>
@@ -114,7 +142,7 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>21</height>
+     <height>23</height>
     </rect>
    </property>
    <widget class="QMenu" name="fileButton">
