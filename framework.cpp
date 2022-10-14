@@ -1,6 +1,5 @@
 #include "framework.h"
 #include "ELFStudio_autogen/include/ui_framework.h"
-#include "ui_framework.h"
 
 Framework::Framework(QWidget *parent)
     : QMainWindow(parent)
@@ -16,11 +15,12 @@ Framework::~Framework()
 }
 
 void Framework::FileOpen(){
-    /*Any ELF file can now be opened and read from the file explorer to read the strings.
+    /*Any ELF file can be opened and read from the file explorer to read the strings.
      * - Rebecca*/
     QFileDialog dialog(this);
     dialog.setFileMode(QFileDialog::ExistingFile);
     QString fName = dialog.getOpenFileName();
+    ui->lineEdit->insert(fName);
     dialog.close();
     std::string command = "strings "+fName.toStdString()+" > strings.txt";
     system(command.c_str());
@@ -41,9 +41,15 @@ void Framework::FileOpen(){
     if (!f2.open(QIODevice::ReadOnly))
         qDebug() << "NO STILL";
     qDebug() << "you opened up again? ugh";
-    QByteArray data = f2.read(f2.size());
+    QByteArray data = f2.readAll();
     this->FileHeader(data[4]);
-    this->CalculateMD5(data, f2.size());
+    ui->lineEdit_2->insert(QString::number(data.length()) + " bytes");
+    QString h1 = this->CalculateHash(data, data.length(), EVP_md5(), MD5_DIGEST_LENGTH);
+    QString h2 = this->CalculateHash(data, data.length(), EVP_sha1(), SHA_DIGEST_LENGTH);
+    QString h3 = this->CalculateHash(data, data.length(), EVP_sha256(), SHA256_DIGEST_LENGTH);
+    ui->lineEdit_4->insert(h1);
+    ui->lineEdit_5->insert(h2);
+    ui->lineEdit_6->insert(h3);
     f2.close();
 }
 
@@ -52,22 +58,25 @@ void Framework::FileHeader(int b){
      * - Rebecca*/
     qDebug() << b;
     if(b == 1){
-        qDebug() << "32 Bit";
+        ui->lineEdit_3->insert("32 Bit");
     }
 
     else {
-        qDebug() << "64 Bit";
+        ui->lineEdit_3->insert("64 Bit");
     }
 }
 
-void Framework::CalculateMD5(QByteArray d, int sz){
-    /*Calculates the MD5 hash supposedly.
+QString Framework::CalculateHash(QByteArray d, int sz, const EVP_MD* evp, int len){
+    /*Calculates the hashes supposedly.
      * - Rebecca*/
-    QString hash;
-    char buf[32];
-    for(int i = 0; i < sz; i++){
-        sprintf(buf, "%02x", d[i]);
-        hash.append(buf);
+    unsigned char buf [EVP_MAX_MD_SIZE]= {0};
+    unsigned int buf_sz;
+    EVP_Digest (d, sz, buf, &buf_sz, evp, NULL);
+    char buf2 [EVP_MAX_MD_SIZE];
+    QString hash = "";
+    for(int i = 0; i < buf_sz; i++){
+        sprintf(buf2, "%02x", buf[i]);
+        hash.append(buf2);
     }
-    qDebug() << hash;
+    return hash;
 }

@@ -9,6 +9,9 @@
 #include <QFileDialog>
 #include <QByteArray>
 #include <QDir>
+#include <openssl/evp.h>
+#include <openssl/md5.h>
+#include <openssl/sha.h>
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -26,7 +29,7 @@ public:
     ~Framework();
     void FileOpen();
     void FileHeader(int f);
-    void CalculateMD5(QByteArray data, int sz);
+    QString CalculateHash(QByteArray data, int sz, const EVP_MD* evp, int len = 0);
 
 private:
     Ui::Framework *ui;
