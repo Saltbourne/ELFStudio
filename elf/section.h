@@ -30,18 +30,13 @@ public:
 		bytes = NULL;
 	}
 
-	uint64_t get_vma()
-	{
-		return this.vma;
-	}
+	uint64_t get_vma();
 
-	uint64_t get_size()
-	{
-		return this.size;
-	}
+	uint64_t get_size();
 
-	uint8_t* get_bytes()
-	{
-		return this.bytes;
-	}
+	uint8_t* get_bytes();
+
+	void set_vma(uint64_t vma);
+
+	void set_size(uint64_t size);
 };
