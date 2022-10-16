@@ -13,5 +13,9 @@ private:
 		BIN_TYPE_ELF   = 1
 	};
 
-	
+	enum Binary_Arch 
+	{
+		ARCH_NONE = 0,
+		ARCH_x86 = 1
+	};
 }
