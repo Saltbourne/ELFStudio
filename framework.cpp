@@ -20,7 +20,7 @@ void Framework::FileOpen(){
     QFileDialog dialog(this);
     dialog.setFileMode(QFileDialog::ExistingFile);
     QString fName = dialog.getOpenFileName();
-    ui->lineEdit->insert(fName);
+    ui->lineEdit->setText(fName);
     dialog.close();
     std::string command = "strings "+fName.toStdString()+" > strings.txt";
     system(command.c_str());
@@ -43,13 +43,14 @@ void Framework::FileOpen(){
     qDebug() << "you opened up again? ugh";
     QByteArray data = f2.readAll();
     this->FileHeader(data[4]);
-    ui->lineEdit_2->insert(QString::number(data.length()) + " bytes");
+    this->FileEntropy(data, data.length());
+    ui->lineEdit_2->setText(QString::number(data.length()) + " bytes");
     QString h1 = this->CalculateHash(data, data.length(), EVP_md5(), MD5_DIGEST_LENGTH);
     QString h2 = this->CalculateHash(data, data.length(), EVP_sha1(), SHA_DIGEST_LENGTH);
     QString h3 = this->CalculateHash(data, data.length(), EVP_sha256(), SHA256_DIGEST_LENGTH);
-    ui->lineEdit_4->insert(h1);
-    ui->lineEdit_5->insert(h2);
-    ui->lineEdit_6->insert(h3);
+    ui->lineEdit_4->setText(h1);
+    ui->lineEdit_5->setText(h2);
+    ui->lineEdit_6->setText(h3);
     f2.close();
 }
 
@@ -58,12 +59,34 @@ void Framework::FileHeader(int b){
      * - Rebecca*/
     qDebug() << b;
     if(b == 1){
-        ui->lineEdit_3->insert("32 Bit");
+        ui->lineEdit_3->setText("32 Bit");
     }
 
     else {
-        ui->lineEdit_3->insert("64 Bit");
+        ui->lineEdit_3->setText("64 Bit");
     }
+}
+
+void Framework::FileEntropy(QByteArray d, int sz){
+    /*Entropy  of file
+     - Rebecca*/
+
+    std::map<int,int> freq;
+    for(int i = 0; i < sz; i++){
+        int count = (int)(d[i]);
+        freq[count]++;
+    }
+    float entropy = 0;
+    for(auto i = freq.begin(); i != freq.end(); i++){
+        float p = (float)i->second / (float)sz;
+        if (p > 0){
+              entropy += p * log2(p);
+         }
+    }
+    entropy *= -1;
+    qDebug() << entropy;
+    ui->lineEdit_7->setText(QString::number(entropy, 'g', 4));
+
 }
 
 QString Framework::CalculateHash(QByteArray d, int sz, const EVP_MD* evp, int len){
