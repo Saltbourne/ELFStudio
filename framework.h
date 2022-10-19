@@ -29,6 +29,7 @@ public:
     ~Framework();
     void FileOpen();
     void FileHeader(int f);
+    void FileEntropy(QByteArray data, int sz);
     QString CalculateHash(QByteArray data, int sz, const EVP_MD* evp, int len = 0);
 
 private:
