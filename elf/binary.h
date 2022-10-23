@@ -47,6 +47,7 @@ public:
 	int  load_binary   (std::string &fname, Binary *bin, Binary::BinaryType type);
 	void unload_binary (Binary *bin);
 
+	std::string get_filename();
 	Binary_Type get_Binary_Type();
 	void set_filename(std::string filename);
 	void set_type_string(std::string type_string);
