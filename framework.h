@@ -31,6 +31,8 @@ public:
     void FileHeader(int f);
     void FileEntropy(QByteArray data, int sz);
     QString CalculateHash(QByteArray data, int sz, const EVP_MD* evp, int len = 0);
+    void Ascii_Strings(QByteArray data, int sz);
+    void Unicode_Strings(QByteArray data, int sz);
 
 private:
     Ui::Framework *ui;

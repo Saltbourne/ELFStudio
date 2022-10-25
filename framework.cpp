@@ -1,11 +1,16 @@
 #include "framework.h"
 #include "ELFStudio_autogen/include/ui_framework.h"
+#include <ctype.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
 
 Framework::Framework(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::Framework)
 {
     ui->setupUi(this);
+    ui->stringTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     QObject::connect(ui->openButton, &QAction::triggered, this, &Framework::FileOpen);
 }
 
@@ -20,28 +25,19 @@ void Framework::FileOpen(){
     QFileDialog dialog(this);
     dialog.setFileMode(QFileDialog::ExistingFile);
     QString fName = dialog.getOpenFileName();
-    ui->lineEdit->setText(fName);
     dialog.close();
-    std::string command = "strings "+fName.toStdString()+" > strings.txt";
-    system(command.c_str());
-    qDebug() << QDir::currentPath();
-    QFile f(QString(QCoreApplication::applicationDirPath() + "/strings.txt"));
+
+    QFile f(fName);
     if (!f.open(QIODevice::ReadOnly))
         qDebug() << "NO";
     qDebug() << "you just opened up";
-    QTextStream stringsFile(&f);
-    for (QString line = stringsFile.readLine();
-         !line.isNull();
-         line = stringsFile.readLine()) {
-         ui->stringsBox->append(line + "\n");
-    };
-    f.close();
+    QByteArray data = f.readAll();
 
-    QFile f2(fName);
-    if (!f2.open(QIODevice::ReadOnly))
-        qDebug() << "NO STILL";
-    qDebug() << "you opened up again? ugh";
-    QByteArray data = f2.readAll();
+    ui->lineEdit->setText(fName);
+    ui->stringTable->clearContents();
+    ui->stringTable->setRowCount(0);
+    this->Ascii_Strings(data, data.length());
+    //this->Unicode_Strings(data, data.length());
     this->FileHeader(data[4]);
     this->FileEntropy(data, data.length());
     ui->lineEdit_2->setText(QString::number(data.length()) + " bytes");
@@ -51,7 +47,7 @@ void Framework::FileOpen(){
     ui->lineEdit_4->setText(h1);
     ui->lineEdit_5->setText(h2);
     ui->lineEdit_6->setText(h3);
-    f2.close();
+    f.close();
 }
 
 void Framework::FileHeader(int b){
@@ -102,4 +98,71 @@ QString Framework::CalculateHash(QByteArray d, int sz, const EVP_MD* evp, int le
         hash.append(buf2);
     }
     return hash;
+}
+
+void Framework::Ascii_Strings(QByteArray d, int sz){
+  char buf[512];		/* the strings buffer */
+  char *bufptr;			/* pointer into the strings buffer */
+  long offset = 0L;			/* file offset */
+  long limit = 0L;			/* limit, if doing data segment only */
+  int c;			/* input character */
+  bool unicode = false;
+
+  bufptr = buf;
+  while (offset < sz) {
+    c = d[(int)offset];
+    if ((('\0' == c || '\n' == c) && bufptr - buf >= 4)
+        || (bufptr - buf == 512 - 1)) {
+        *bufptr = '\0';
+        ui->stringTable->insertRow(ui->stringTable->rowCount());
+        if(unicode == true){
+            ui->stringTable->setItem(ui->stringTable->rowCount()-1, 0, new QTableWidgetItem("Unicode"));
+            unicode = false;
+        }
+        else{
+            ui->stringTable->setItem(ui->stringTable->rowCount()-1, 0, new QTableWidgetItem("Ascii"));
+        }
+        ui->stringTable->setItem(ui->stringTable->rowCount()-1, 1, new QTableWidgetItem(QString::number(strlen(buf))));
+        ui->stringTable->setItem(ui->stringTable->rowCount()-1, 2, new QTableWidgetItem(buf));
+        bufptr = buf;
+    } else if (' ' <= c || '\t' == c || c < 0){
+        if(c < 0){
+            unicode = true;
+        }
+        *bufptr++ = c;
+    }
+    else
+        bufptr = buf;
+
+    ++offset;
+  }
+}
+
+void Framework::Unicode_Strings(QByteArray d, int sz){
+  char buf[512];		/* the strings buffer */
+  char *bufptr;			/* pointer into the strings buffer */
+  long offset = 0L;			/* file offset */
+  long limit = 0L;			/* limit, if doing data segment only */
+  int c;			/* input character */
+
+  bufptr = buf;
+
+  while (offset < sz) {
+    c = d[(int)offset];
+    if ((('\0' == c || '\n' == c) && bufptr - buf >= 4)
+        || (bufptr - buf == 512 - 1)) {
+        *bufptr = '\0';
+        ui->stringTable->insertRow(ui->stringTable->rowCount());
+        ui->stringTable->setItem(ui->stringTable->rowCount()-1, 0, new QTableWidgetItem("Unicode"));
+        ui->stringTable->setItem(ui->stringTable->rowCount()-1, 1, new QTableWidgetItem(QString::number(strlen(buf))));
+        ui->stringTable->setItem(ui->stringTable->rowCount()-1, 2, new QTableWidgetItem(buf));
+        bufptr = buf;
+    } else if (' ' <= abs(c) || '\t' == c || c < 0){
+        *bufptr++ = c;
+        qDebug() << buf;}
+    else
+        bufptr = buf;
+
+    ++offset;
+  }
 }
