@@ -2,6 +2,8 @@
 #include <string>
 #include <vector>
 
+#include "Section.h"
+
 class Symbol
 {
 public:

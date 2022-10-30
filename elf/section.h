@@ -2,7 +2,8 @@
 
 #include <iostream>
 #include <string>
-#include <bfd.h>
+
+#include "Binary.h"
 
 class Section
 {
