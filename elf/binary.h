@@ -2,7 +2,8 @@
 
 #include <string>
 #include <vector>
-#include <iostream>
+
+#include <bfd.h>
 
 class Binary
 {
@@ -11,18 +12,21 @@ public:
 //Can add more binary types later
 	enum Binary_Type
 	{
-		BINARY_TYPE_DEFAULT 	= 0,
-		BINARY_TYPE_ELF   		= 1, 
-		BINARY_TYPE_PE			= 2
+		DEFAULT 	= 0,
+		ELF   		= 1, 
+		PE			= 2
 	} binary_type;
 
 //Check if the binary is 32 bits or 64
 	enum Binary_Architecture
 	{
-		ARCHITECTURE_UNKOWN 	= 0,
-		ARCHITECTURE_X86 		= 1,
-		ARCHITECTURE_X86_64		= 2
+		UNKOWN 		= 0,
+		X86 		= 1,
+		X86_64		= 2
 	} binary_arch;
+
+
+	Binary() : binary_type(DEFAULT), binary_arch(UNKNOWN), bits(0), entry_address(0) {}
 
 //Fill the section and symbol vectors
 	std::vector<Section> sections;
@@ -41,8 +45,9 @@ public:
 	unsigned get_binary_bits();
 	uint64_t get_binary_entry_address();
 
-	int  load_binary   (std::string &filename, Binary *binary, Binary::Binary_Type binary_type);
-	void unload_binary (Binary *bin);
+	bfd 	open_binary(std::filename);
+	int 	load_binary(std::string &filename, Binary *binary, Binary::Binary_Type binary_type);
+	void 	unload_binary(Binary *bin);
 
 
 private:
