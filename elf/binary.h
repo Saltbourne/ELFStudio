@@ -8,54 +8,54 @@
 
 class Binary
 {
-private:
+public:
+// Describe the type of Binary
+	enum Binary_Type
+	{
+		BINARY_TYPE_DEFAULT 	= 0,
+		BINARY_TYPE_ELF   		= 1, 
+		BINARY_TYPE_PE			= 2
+	};
 
-	std::string		filename;
-	std::string		type_string;
-	std::string 	archit_string;
-	unsigned		bits;
-	uint64_t		entry_addr;
+//Check if the binary is 32 bits or 64
+	enum Binary_Architecture
+	{
+		ARCHITECTURE_UNKOWN 	= 0,
+		ARCHITECTURE_X86 		= 1,
+		ARCHITECTURE_X86_64		= 2
+	};
+
+//Set the object for each of the enums
+	Binary_Type				bin_type;
+	Binary_Architecture		bin_arch;
+
+//Fill the section and symbol vectors
 	std::vector<Section> sections;
 	std::vector<Symbol> symbols
 
-public:
-	Binary()
-	{
-		type = BIN_TYPE_OTHER;
-		archit = ARCH_NONE;
-		bits = 0;
-		entry_addr = 0x0;
-	}
 
-	enum Binary_Type
-	{
-		BIN_TYPE_OTHER = 0,
-		BIN_TYPE_ELF   = 1
-	};
+/* **************** Setters for binary **************** */
 
-	enum Binary_Arch 
-	{
-		ARCH_NONE = 0,
-		ARCH_x86 = 1
-	};
-
-	Binary_Type		bin_type;
-	Binary_Arch		bin_arch;
-
-	Section *get_text_section();
-
-	int  load_binary   (std::string &fname, Binary *bin, Binary::BinaryType type);
-	void unload_binary (Binary *bin);
-
-	std::string get_filename();
-	Binary_Type get_Binary_Type();
 	void set_filename(std::string filename);
 	void set_type_string(std::string type_string);
 	void set_archit_string(std::string archit_string)
 
-	//using pointers for the vector since they can be empty.
-	//References can not be null.
-	void set_sections_vector(std::vector<Section> *sections);
-	void set_symbols_vector(std::vector<Symbol> *symbols);
+/* **************** Getter for binary ****************** */
+
+	std::string get_binary_filename();
+	unsigned get_binary_bits();
+	uint64_t get_binary_entry_address();
+
+	int  load_binary   (std::string &fname, Binary *bin, Binary::BinaryType type);
+	void unload_binary (Binary *bin);
+
+
+private:
+
+	std::string		filename;
+//	std::string		type_string;
+//	std::string 	archit_string;
+	unsigned		bits;
+	uint64_t		entry_address;
 
 };
