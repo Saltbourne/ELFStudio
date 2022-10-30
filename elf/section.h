@@ -20,6 +20,8 @@ public:
 
 	Section() : binary(NULL), section_type(NONE), section_name(), vma(0), section_size(0), bytes(NULL) {}
 
+	int load_binary_sections(bfd *bfd, Binary *binary);
+
 /* ********************** Getter functions ************************** */
 	std::string		get_section_name();
 	uint64_t		get_section_vma();

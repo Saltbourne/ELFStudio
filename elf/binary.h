@@ -38,14 +38,16 @@ public:
 	void set_filename(std::string filename);
 	void set_type_string(std::string type_string);
 	void set_archit_string(std::string archit_string)
+	void set_binary_entry_address(uint64_t entry_address);
 
 /* **************** Getter for binary ****************** */
 
 	std::string get_binary_filename();
 	unsigned get_binary_bits();
 	uint64_t get_binary_entry_address();
+	ufile_ptr get_binary_file_size();
 
-	bfd 	open_binary(std::filename);
+	//bfd 	open_binary(std::filename);
 	int 	load_binary(std::string &filename, Binary *binary, Binary::Binary_Type binary_type);
 	void 	unload_binary(Binary *bin);
 
@@ -57,5 +59,6 @@ private:
 //	std::string 	archit_string;
 	unsigned		bits;
 	uint64_t		entry_address;
+	ufile_ptr		file_size;
 
 };

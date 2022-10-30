@@ -45,18 +45,43 @@ Binary::bfd open_binary(std::string &filename)
 
 }
 
-Binary::bfd load_bfd_binary(std::string &filename, Binary *binary, Binary::Binary_Type binary_type)
+Binary::int load_bfd_binary(std::string &filename, Binary *binary, Binary::Binary_Type binary_type)
 {
 
 	bfd *bfd_h;
 	bfd_h = open_binary(filename);
 	if(!bfd_h)
 	{
-		//Did not load.
+		//Did not load.  Do not proceed.
 		return 0;
 	}
 
-	
+	Binary *binary;
+
+	binary -> set_binary_entry_address(bfd_get_start_address(bfd_h));
+
+	binary -> ufile_ptr get_binary_file_size(bfd_get_file_size(bfd_h));
+
+	//TODO
 
 	return bfd_h;
+}
+
+Section::int load_binary_sections(bfd *bfd_h, Binary *binary)
+{
+	//TODO
+	return 0; //successfully loaded
+}
+
+
+Symbol::load_binary_static_symbols(bfd *bfd_h, Binary *binary)
+{
+	//TODO
+	return 0;  //successfully loaded
+}
+
+Symbol::int load_binary_dynamic_symbols(bfd *bfd_h, Binary *binary)
+{
+	//TODO
+	return 0;  successfully loaded
 }
