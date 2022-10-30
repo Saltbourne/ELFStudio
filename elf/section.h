@@ -6,37 +6,36 @@
 
 class Section
 {
-private:
+public:
+
+	//Link section back to the binary
+	Binary			*binary;
+
 	enum Section_Type
 	{
-		SEC_TYPE_NONE = 0,
-		SEC_TYPE_CODE = 1,
-		SEC_TYPE_DATA = 2
-	};
+		NONE 	= 0,
+		CODE	= 1,
+		DATA 	= 2
+	} section_type;
 
-	std::string 		sec_name;
-	Section_Type 		sec_type;
-	uint64_t 			vma;
-	uint64_t			size;
-	uint8_t				*bytes;
+	Section() : binary(NULL), section_type(NONE), section_name(), vma(0), section_size(0), bytes(NULL) {}
 
-public:
-	Section()
-	{
-		//default parameters
-		type = SEC_TYPE_NONE;
-		vma = 0;
-		size = 0;
-		bytes = NULL;
-	}
+/* ********************** Getter functions ************************** */
+	std::string		get_section_name();
+	uint64_t		get_section_vma();
+	uint64_t		get_section_size();
+	uint8_t			get_section_bytes();
 
-	uint64_t get_vma();
+/* ********************** Setter functions ************************** */
+	void 	set_section_name(std::string name);
+	void	set_section_vma(uint64_t vma);
+	void 	set_section_size(uint64_t size);
+	void	set_section_bytes(uint8_t *bytes);
 
-	uint64_t get_size();
+private:
 
-	uint8_t* get_bytes();
-
-	void set_vma(uint64_t vma);
-
-	void set_size(uint64_t size);
+	std::string		section_name;
+	uint64_t		vma;
+	uint64_t		section_size;
+	uint8_t			*section_bytes;
 };

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Section.h"
-#include "Symbol.h"
+
 #include <string>
 #include <vector>
 #include <iostream>
@@ -10,12 +10,13 @@ class Binary
 {
 public:
 // Describe the type of Binary
+//Can add more binary types later
 	enum Binary_Type
 	{
 		BINARY_TYPE_DEFAULT 	= 0,
 		BINARY_TYPE_ELF   		= 1, 
 		BINARY_TYPE_PE			= 2
-	};
+	} binary_type;
 
 //Check if the binary is 32 bits or 64
 	enum Binary_Architecture
@@ -23,11 +24,7 @@ public:
 		ARCHITECTURE_UNKOWN 	= 0,
 		ARCHITECTURE_X86 		= 1,
 		ARCHITECTURE_X86_64		= 2
-	};
-
-//Set the object for each of the enums
-	Binary_Type				bin_type;
-	Binary_Architecture		bin_arch;
+	} binary_arch;
 
 //Fill the section and symbol vectors
 	std::vector<Section> sections;
@@ -46,7 +43,7 @@ public:
 	unsigned get_binary_bits();
 	uint64_t get_binary_entry_address();
 
-	int  load_binary   (std::string &fname, Binary *bin, Binary::BinaryType type);
+	int  load_binary   (std::string &filename, Binary *binary, Binary::Binary_Type binary_type);
 	void unload_binary (Binary *bin);
 
 
