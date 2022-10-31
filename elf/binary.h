@@ -37,8 +37,10 @@ public:
 
 	void set_filename(std::string filename);
 	void set_type_string(std::string type_string);
-	void set_archit_string(std::string archit_string)
+	void set_binary_archit_name(std::string archit_name)
 	void set_binary_entry_address(uint64_t entry_address);
+	void set_binary_flavour(std::string flavour);
+	void set_binary_bits(unsinged bits);
 
 /* **************** Getter for binary ****************** */
 
@@ -56,7 +58,8 @@ private:
 
 	std::string		filename;
 //	std::string		type_string;
-//	std::string 	archit_string;
+	std::string 	arch_name;
+	std::string 	flavour;
 	unsigned		bits;
 	uint64_t		entry_address;
 	ufile_ptr		file_size;
