@@ -109,7 +109,26 @@ Binary::int load_bfd_binary(std::string &filename, Binary *binary, Binary::Binar
 
 Section::int load_binary_sections(bfd *bfd_h, Binary *binary)
 {
-	//TODO
+	const char *section_name;
+	asection *bfd_section;
+	Section *section;
+
+
+	//loop through all of the sections
+	for(bfd_section = bfd_h -> sections; bfd_section;bfd_section -> next)
+	{
+		section_type = NONE;
+
+		binary -> sections.push_back(Section());
+		section = &bin -> sections.back();
+
+		section -> set_section_vma(bfd_section_vma(bfd_section));
+		section -> set_section_size(bfd_section_size(bfd_section));
+		section -> set_section_name(bfd_section_name(bfd_section));
+		section -> set_section_bytes(uint8_t*)malloc(section -> set_section_size(bfd_section_size(bfd_section)));
+		
+
+	}
 	return 0; //successfully loaded
 }
 
