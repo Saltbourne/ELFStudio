@@ -14,12 +14,18 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 find_package(QT NAMES Qt6 Qt5 REQUIRED COMPONENTS Widgets)
 find_package(Qt${QT_VERSION_MAJOR} REQUIRED COMPONENTS Widgets)
 find_package(Qt6 REQUIRED COMPONENTS QuickControls2)
+find_package(Qt6 REQUIRED COMPONENTS Sql)
 
 set(PROJECT_SOURCES
         main.cpp
         framework.cpp
         framework.h
         framework.ui
+        binary.h
+        section.h
+        symbol.h
+        bfd.h
+        elf.h
 )
 
 if(${QT_VERSION_MAJOR} GREATER_EQUAL 6)
@@ -45,8 +51,9 @@ else()
     endif()
 endif()
 
-target_link_libraries(ELFStudio PRIVATE Qt${QT_VERSION_MAJOR}::Widgets -lcrypto)
+target_link_libraries(ELFStudio PRIVATE Qt${QT_VERSION_MAJOR}::Widgets -lcrypto -lbfd)
 target_link_libraries(ELFStudio PRIVATE Qt6::QuickControls2)
+target_link_libraries(ELFStudio PRIVATE Qt6::Sql)
 
 set_target_properties(ELFStudio PROPERTIES
     MACOSX_BUNDLE_GUI_IDENTIFIER my.example.com

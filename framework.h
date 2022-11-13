@@ -9,6 +9,8 @@
 #include <QFileDialog>
 #include <QByteArray>
 #include <QDir>
+#include <QErrorMessage>
+#include <QSqlQuery>
 #include <openssl/evp.h>
 #include <openssl/md5.h>
 #include <openssl/sha.h>
@@ -27,10 +29,13 @@ class Framework : public QMainWindow
 public:
     Framework(QWidget *parent = nullptr);
     ~Framework();
+    void DBConnect();
     void FileOpen();
     void FileHeader(int f);
-    void FileEntropy(QByteArray data, int sz);
+    float FileEntropy(QByteArray data, int sz);
     QString CalculateHash(QByteArray data, int sz, const EVP_MD* evp, int len = 0);
+    void FileStrings(QByteArray data, int sz);
+    void Load_Sections(QString filename);
 
 private:
     Ui::Framework *ui;
