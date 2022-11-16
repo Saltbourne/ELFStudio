@@ -32,12 +32,15 @@ public:
     void DBConnect();
     void FileOpen();
     void FileHeader(int f);
-    float FileEntropy(QByteArray data, int sz);
-    QString CalculateHash(QByteArray data, int sz, const EVP_MD* evp, int len = 0);
+    template <typename T>
+    float FileEntropy(T d, int sz);
+    template <typename T>
+    QString CalculateHash(T d, int sz, const EVP_MD* evp, int len = 0);
     void FileStrings(QByteArray data, int sz);
     void Load_Sections(QString filename);
 
 private:
     Ui::Framework *ui;
+    QSqlDatabase db;
 };
 #endif // FRAMEWORK_H

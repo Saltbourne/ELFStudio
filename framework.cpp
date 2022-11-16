@@ -11,24 +11,26 @@ Framework::Framework(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::Framework)
 {
+    QSqlDatabase db;
     this->DBConnect();
     ui->setupUi(this);
+    ui->tabWidget->setCurrentIndex(0);
     ui->stringTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     ui->sectTable->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
-
     QObject::connect(ui->openButton, &QAction::triggered, this, &Framework::FileOpen);
 }
 
 Framework::~Framework()
 {
     delete ui;
+    db.close();
 }
 
 void Framework::DBConnect(){
-    QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE");
+    db = QSqlDatabase::addDatabase("QSQLITE");
     db.setDatabaseName("sus_pats.db");
     bool ok = db.open();
-    if(db.isValid() && db.isOpen()){
+    if(ok){
         qDebug() << "The DB is successfully loaded.";
     }
     else{
@@ -54,21 +56,24 @@ void Framework::FileOpen(){
 
     ui->lineEdit->setText(fName);
     ui->stringTable->clearContents();
+    ui->stringTable->setSortingEnabled(false);
     ui->stringTable->setRowCount(0);
     ui->sectTable->clearContents();
     ui->sectTable->setColumnCount(0);
+
     this->FileStrings(data, data.length());
-    //this->Unicode_Strings(data, data.length());
     this->FileHeader(data[4]);
     float e = this->FileEntropy(data, data.length());
     ui->lineEdit_2->setText(QString::number(data.length()) + " bytes");
     ui->lineEdit_7->setText(QString::number(e, 'g', 4));
+
     QString h1 = this->CalculateHash(data, data.length(), EVP_md5(), MD5_DIGEST_LENGTH);
     QString h2 = this->CalculateHash(data, data.length(), EVP_sha1(), SHA_DIGEST_LENGTH);
     QString h3 = this->CalculateHash(data, data.length(), EVP_sha256(), SHA256_DIGEST_LENGTH);
     ui->lineEdit_4->setText(h1);
     ui->lineEdit_5->setText(h2);
     ui->lineEdit_6->setText(h3);
+
     this->Load_Sections(fName);
     f.close();
 }
@@ -86,14 +91,11 @@ void Framework::FileHeader(int b){
     }
 }
 
-float Framework::FileEntropy(QByteArray d, int sz){
+template <typename T>
+float Framework::FileEntropy(T d, int sz){
     /*Entropy  of file
      - Rebecca*/
-//qDebug() << d;
     std::map<int,int> freq;
-    if(d.size() < sz){
-        return 0;
-    }
 
     for(int i = 0; i < sz; i++){
         int count = (int)(d[i]);
@@ -112,7 +114,8 @@ float Framework::FileEntropy(QByteArray d, int sz){
 
 }
 
-QString Framework::CalculateHash(QByteArray d, int sz, const EVP_MD* evp, int len){
+template <typename T>
+QString Framework::CalculateHash(T d, int sz, const EVP_MD* evp, int len){
     /*Calculates the hashes supposedly.
      * - Rebecca*/
     //qDebug() << d;
@@ -133,7 +136,7 @@ void Framework::FileStrings(QByteArray d, int sz){
   char *bufptr;			/* pointer into the strings buffer */
   long offset = 0L;			/* file offset */
   long limit = 0L;			/* limit, if doing data segment only */
-  uint c;			/* input character */
+  uint8_t c;			/* input character */
   bool unicode = false;
 
   bufptr = buf;
@@ -144,6 +147,7 @@ void Framework::FileStrings(QByteArray d, int sz){
         *bufptr = '\0';
         ui->stringTable->insertRow(ui->stringTable->rowCount());
         if(unicode == true){
+            std::cout << buf << std::endl;
             ui->stringTable->setItem(ui->stringTable->rowCount()-1, 0, new QTableWidgetItem("Unicode"));
             unicode = false;
         }
@@ -164,6 +168,7 @@ void Framework::FileStrings(QByteArray d, int sz){
 
     ++offset;
   }
+  ui->stringTable->setSortingEnabled(true);
 }
 
 /*
@@ -313,12 +318,12 @@ void Framework::Load_Sections(QString filename)
         std::string v_addr = "0x" + std::to_string(bfd_section_vma(bfd_sec));
         std::string l_addr = "0x" + std::to_string(bfd_section_lma(bfd_sec));
 
-        char* buf;
-        buf = (char*)malloc(size);
+        uint8_t* buf;
+        buf = (uint8_t*)malloc(size);
         if(!bfd_get_section_contents(bfd_h, bfd_sec, buf, 0, size)){
                 std::cout << "Unable to read " << name << " due to unexpected error." << std::endl;
         }
-        qDebug() << buf << "\n";
+        std::cout << *buf << "\n";
 
         if(name == ".text" || name == ".data" || name == ".symtab" || name == ".dynsym" || name == ".dynamic"){
             ui->sectTable->insertColumn(ui->sectTable->columnCount());
