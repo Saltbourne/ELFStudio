@@ -1,152 +1,103 @@
-#pragma once
-
 #include "Binary.h"
-#include <iostream>
-#include <bfd.h>
 
-Binary::bfd open_binary(std::string &filename)
+int Binary::open_binary_file(std::string filename)
 {
-	//use static so magic is only initialized once.
-	static int magic = 1;
-	if(!magic)
-	{
-		// The bfd_init() function initializes the magic number once.
-		bfd_init();
-	}
+    //check to see if the magic value has been set.  This is required for opening.
+    static int magic = 1;
+    if(!magic)
+    {
+        bfd_init();
+    }
 
-	bfd *bfd_h;
+    //open the file with the bfd open read function.  Target is set to NULL
+    this -> storebfd = bfd_openr(filename.c_str(), NULL);
 
-	bfd_h = bfd_openr(filename, NULL); //There is no target (another bfd would be target) in this case
+    if(!this -> storebfd)
+    {
+        std::cerr << "Failed to open the binary : " << filename << bfd_errmsg(bfd_get_error()) << std::endl;
+        bfd_close(this -> storebfd);
+        return -1;
+    }
 
-	if(!bfd_h)
-	{
-		//bfd did not open. Print an error message
-		std::cerr << "Failed to open binary: " << filename << bfd_errmsg(bfd_get_error()) << std::endl;
-		return NULL;
-	}
+    int loaded = bfd_check_format(this -> storebfd, bfd_object);
+    if(!loaded)
+    {
+        std::cerr << "Binary is not an executable. " << "File: " << filename << " " << std::endl;
+        bfd_close(this -> storebfd);
+        return -2;
+    }
 
-	//Since the file opened check the format
-	int loaded;
+    if(bfd_get_flavour(this -> storebfd) == bfd_target_unknown_flavour)
+    {
+        std::cerr << "Binary is not an ELF type.  Please run the system command <file> on " << filename << " to check the file type. "
+                << bfd_errmsg(bfd_get_error()) << std::endl;
+        bfd_close(this -> storebfd);
+        return -3;
+    }
 
-	//send a bfd_object to fill bfd_h with data.  Otherwise "unknown" file type is used
-	loaded = bfd_check_format(bfd_h, bfd_object);
-	if(!loaded)
-	{
-		std::cerr << "Binary is not an executable " << filename << bfd_errmsg(bfd_get_error()) << std::endl;
-		return NULL;
-	}
+    //sucessful opening of the file
 
-	if(bfd_get_flavour(bfd_h) == bfd_target_unknown_flavour)
-	{
-		std::cerr << "UNKNOWN file type for binary.  Not supported " << bfd_errmsg(bfd_get_error()) << std::endl;
-	}
-
-	//successful open return the pointer
-
-	return bfd_h;
-
+    return 1;
 }
 
-Binary::int load_bfd_binary(std::string &filename, Binary *binary, Binary::Binary_Type binary_type)
+int Binary::load_binary(Binary *binary)
 {
+    const bfd_arch_info_type *binary_info;
 
-	bfd *bfd_h;
-	const bfd_arch_info_type *binary_info;  //get the architecture info
+    //set the entry address to the binary;
+    binary -> set_entry_addr(bfd_get_start_address(binary -> storebfd));
+    //set the file size
+    binary -> set_file_size(bfd_get_file_size(binary -> storebfd));
+    //set the flavour of the binary
+    // bfd *bfd_h = binary -> storebfd;
+    std::string flavour = storebfd -> xvec -> name;
+    binary -> set_flavour(flavour);
+    //store the type of binary, PE or ELF
+    if(storebfd -> xvec -> flavour == bfd_target_coff_flavour)
+    {
+        //set the binary_type enum to the correct type
+        binary -> b_type = Binary::PE;
+        std::cerr << "Window's Portable Executable files are not supported.  Please choose an ELF file. " << std::endl;
+        return -1;
+    } else if(storebfd -> xvec -> flavour == bfd_target_elf_flavour)
+    {
+        //Continue.
+        binary -> b_type = Binary::ELF;
+    } else
+    {
+        //file is not a PE or ELF and thus it is unknown.
+        binary -> b_type = Binary::UNKNOWN;
+        std::cerr << "File type is not supported.  Only ELF file types are supported for this tool. " << std::endl;
+        bfd_close(this -> storebfd);
+        return -2;
+    }
 
-	bfd_h = open_binary(filename);
-	if(!bfd_h)
-	{
-		//Did not load.  Do not proceed.
-		return 0;
-	}
+    //check the architecture.  
+    const bfd_arch_info_type *arch_type;
+    arch_type = bfd_get_arch_info(storebfd);
+    //set the arch name from the printable name of the arch type.
+    binary -> set_arch_name(std::string(arch_type -> printable_name));
+    if(arch_type -> mach == bfd_mach_i386_i386)
+    {
+        binary -> set_bits(32);
+        binary -> b_arch = Binary::X86;
+        std::cerr << "This tool does not support 32 but file types at this point. " << std::endl;
+        return -3;
+    } else if(arch_type -> mach == bfd_mach_x86_64)
+    {
+        binary -> set_bits(64);
+        binary -> b_arch = Binary::X86_64;
+    } else
+    {
+        //file is not a 32, 64 bit file, so it is not supported
+        binary -> set_bits(0);
+        binary -> b_arch = Binary::OTHER;
+        std::cerr << "Architecture is not supported.  Only 64 bit file types are supported. " << std::endl;
+        return -4;
+    }
 
-	Binary *binary;
+    //Error checking is doing in the main function to prevent tool crashing.
 
-	binary -> set_binary_entry_address(bfd_get_start_address(bfd_h));
-
-	binary -> set_binary_file_size(bfd_get_file_size(bfd_h));
-
-	binary -> set_binary_flavour(bfd_h -> xvec -> name);
-
-	//check the binary type
-
-	if(bfd_target_elf_flavour)
-		binary_type = Binary::ELF;
-	
-	else if(bfd_target_coff_flavour)
-		binary_type = Binary::PE;
-
-	else if(bfd_target_unknown_flavour)
-	{
-		std::cerr << "Unknown file type.  Not a ELF or PE: " << bfd_h -> xvec -> name << std::endl;
-
-		//not successful load
-		return -1;
-	}
-
-	//check the architecture type
-	binary_info = bfd_get_arch_info(bfd_h);
-	binary -> arch_name = set_binary_arch_name(binary_info -> printable_name);
-	if(binary_info -> mach == bfd_mach_i386_i386)
-	{
-		binary -> binary_arch = Binary::X86;
-		binary -> set_binary_bits(32);
-	}else if(binary_info -> mach == bfd_mach_x86_64)
-	{
-		binary -> binary_arch = Binary::X86_64;
-		binary -> set_binary_bits(64);
-	}else
-	{
-		std::cerr << "Architecture " << binary_info -> printable_name << " is not supported." << std::endl;
-		return -1;
-	}
-
-	load_binary_static_symbols(bfd_h, binary);
-	load_binary_dynamic_symbols(bfd_h, binary);
-
-	return 0;
-}
-
-Section::int load_binary_sections(bfd *bfd_h, Binary *binary)
-{
-	const char *section_name;
-	asection *bfd_section;
-	Section *section;
-
-	uint64_t size, vma;
-	std::string name;
-
-	//loop through all of the sections
-	for(bfd_section = bfd_h -> sections; bfd_section;bfd_section -> next)
-	{
-		section_type = NONE;
-
-		binary -> sections.push_back(Section());
-		section = &bin -> sections.back();
-
-		vma = bfd_section_vma(bfd_section);
-		size = bfd_section_size(bfd_section);
-		name = bfd_section_name(bfd_section);
-
-		section -> set_section_vma(vma);
-		section -> set_section_size(size);
-		section -> set_section_name(name);
-		
-		section -> set_section_bytes(uint8_t*)malloc(section -> set_section_size(bfd_section_size(bfd_section)));
-
-	}
-	return 0; //successfully loaded
-}
-
-
-Symbol::load_binary_static_symbols(bfd *bfd_h, Binary *binary)
-{
-	//TODO
-	return 0;  //successfully loaded
-}
-
-Symbol::int load_binary_dynamic_symbols(bfd *bfd_h, Binary *binary)
-{
-	//TODO
-	return 0;  successfully loaded
+    //file type and architure is correct, return 1 for success.
+    return 1;
 }
