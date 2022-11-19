@@ -101,3 +101,65 @@ int Binary::load_binary(Binary *binary)
     //file type and architure is correct, return 1 for success.
     return 1;
 }
+
+std::string Binary::get_filename() const
+{
+    return this -> filename;
+}
+
+std::string Binary::get_arch_name() const
+{
+    return this -> arch_name;
+}
+
+std::string Binary::get_flavour() const
+{
+    return this -> flavour;
+}
+
+unsigned Binary::get_bits() const
+{
+    return this -> bits;
+}
+
+uint64_t Binary::get_entry_addr() const
+{
+    return this -> entry_addr;
+}
+
+ufile_ptr Binary::get_file_size() const
+{
+    return this -> file_size;
+}
+
+//setter functions;
+
+void Binary::set_filename(std::string filename)
+{
+    this -> filename = filename;
+}
+
+void Binary::set_arch_name(std::string arch_name)
+{
+    this -> arch_name = arch_name;
+}
+
+void Binary::set_flavour(std::string flavour)
+{
+    this -> flavour = flavour;
+}
+
+void Binary::set_bits(unsigned bits)
+{
+    this -> bits = bits;
+}
+
+void Binary::set_entry_addr(uint64_t entry_addr)
+{
+    this -> entry_addr = entry_addr;
+}
+
+void Binary::set_file_size(ufile_ptr file_size)
+{
+    this -> file_size = file_size;
+}

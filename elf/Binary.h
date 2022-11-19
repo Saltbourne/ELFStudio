@@ -1,7 +1,12 @@
 #pragma once
 #include <iostream>
+#include <vector>
 #include <bfd.h>
+#include "Section.h"
+#include "Symbol.h"
 
+class Section;
+class Symbol;
 class Binary
 {
 public:
@@ -29,74 +34,30 @@ public:
     //Store the bfd object in the class
     bfd *storebfd = nullptr;
 
+    //Store symbol and section data in the vectors.
+    std::vector<Symbol> symbols;
+    std::vector<Section> sections;
+
+
     //Member functions
     int open_binary_file(std::string filename);
     int load_binary(Binary *binary);
-    
-    std::string testInBinary = "String is in the binary class";
-    
+        
     //getter functions
-    std::string get_filename()
-    {
-        return this -> filename;
-    }
-
-    std::string get_arch_name()
-    {
-        return this -> arch_name;
-    }
-
-    std::string get_flavour()
-    {
-        return this -> flavour;
-    }
-
-    unsigned get_bits()
-    {
-        return this -> bits;
-    }
-
-    uint64_t get_entry_addr()
-    {
-        return this -> entry_addr;
-    }
-
-    ufile_ptr get_file_size()
-    {
-        return this -> file_size;
-    }
-
+    std::string get_filename() const;
+    std::string get_arch_name() const;
+    std::string get_flavour() const;
+    unsigned get_bits() const;
+    uint64_t get_entry_addr() const;
+    ufile_ptr get_file_size() const;
 
     //Setter functions
-    void set_filename(std::string filename)
-    {
-        this -> filename = filename;
-    }
-
-    void set_arch_name(std::string arch_name)
-    {
-        this -> arch_name = arch_name;
-    }
-
-    void set_flavour(std::string flavour)
-    {
-        this -> flavour = flavour;
-    }
-
-    void set_bits(unsigned bits)
-    {
-        this -> bits = bits;
-    }
-
-    void set_entry_addr(uint64_t entry_addr)
-    {
-        this -> entry_addr = entry_addr;
-    }
-
-    void set_file_size(ufile_ptr file_size)
-    {
-        this -> file_size = file_size;
-    }
+    void set_filename(std::string filename);
+    void set_arch_name(std::string arch_name);
+    void set_flavour(std::string flavour);
+    void set_bits(unsigned bits);
+    void set_entry_addr(uint64_t entry_addr);
+    void set_file_size(ufile_ptr file_size);
 
 private:
 

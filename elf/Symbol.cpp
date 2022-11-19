@@ -46,13 +46,13 @@ int Symbol::load_static_symbols()
 
         for(long i = 0; i < number_symbols; i++)
         {
-            if(symbol_table[i] -> flags & BSF_FUNCTION)
+            if(symbol_table[i] -> flags & BSF_FUNCTION && !(symbol_table[i] -> flags & BSF_WEAK))
             {
-                this -> symbols.push_back(Symbol());
-                // this-> symbols.back();
-                this -> sym_type = Symbol::FUNCTION;
-                this -> set_sym_name(std::string(symbol_table[i] -> name));
-                this -> set_sym_addr(bfd_asymbol_value(symbol_table[i]));
+                symbolBinary -> symbols.push_back(Symbol());
+                // symbolBinary-> symbols.back();
+                symbolBinary -> symbols[symbolBinary -> symbols.size() - 1].sym_type = FUNCTION;
+                symbolBinary -> symbols[symbolBinary -> symbols.size() - 1].set_sym_name(std::string(symbol_table[i] -> name));
+                symbolBinary -> symbols[symbolBinary -> symbols.size() - 1].set_sym_addr(bfd_asymbol_value(symbol_table[i]));
             }
         }
     }
@@ -96,11 +96,11 @@ int Symbol::load_dynamic_symbols()
         {
             if(dynamic_table[i] -> flags & BSF_FUNCTION)
             {
-                symbol -> symbols.push_back(Symbol());
+                symbolBinary -> symbols.push_back(Symbol());
                 // symbol = &symbol -> symbols.back();
-                symbol -> sym_type = Symbol::FUNCTION;
-                symbol -> set_sym_name(std::string(dynamic_table[i] -> name));
-                symbol -> set_sym_addr(bfd_asymbol_value(dynamic_table[i]));
+                symbolBinary -> symbols[symbolBinary -> symbols.size() - 1].sym_type = FUNCTION;
+                symbolBinary -> symbols[symbolBinary -> symbols.size() - 1].set_sym_name(std::string(dynamic_table[i] -> name));
+                symbolBinary -> symbols[symbolBinary -> symbols.size() - 1].set_sym_addr(bfd_asymbol_value(dynamic_table[i]));
             }
         }
     }
@@ -112,16 +112,18 @@ int Symbol::load_dynamic_symbols()
     return 1;
 }
 
-std::string Symbol::get_sym_name()
+//Getter functions
+std::string Symbol::get_sym_name() const
 {
     return this -> sym_name;
 }
 
-uint64_t Symbol::get_sym_addr()
+uint64_t Symbol::get_sym_addr() const
 {
     return this -> sym_addr;
 }
 
+//Setter functions
 void Symbol::set_sym_name(std::string symbol_name)
 {
     this -> sym_name = symbol_name;

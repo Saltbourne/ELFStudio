@@ -33,22 +33,28 @@ int main(int argc, char** argv)
 
     Symbol *symbol = new Symbol(binary);
     // Symbol *symbol;
-    std::cout << binary ->testInBinary << std::endl;
-    std::cout << symbol -> symbolBinary -> testInBinary << std::endl;
+    // std::cout << binary ->testInBinary << std::endl;
+    // std::cout << symbol -> symbolBinary -> testInBinary << std::endl;
     
     int ret_static = symbol -> load_static_symbols();
-    // int ret_dynamic = symbol -> load_dynamic_symbols();
+    int ret_dynamic = symbol -> load_dynamic_symbols();
     // ret = symbol -> load_static_symbols(binary);
 
     std::cout << "The return value of static symbols is: " << ret_static << std::endl;
-    // std::cout << "The return value of static symbols is: " << ret_dynamic << std::endl;
+    std::cout << "The return value of dynaic symbols is: " << ret_dynamic << std::endl;
 
-    int size = symbol -> symbols.size();
+    int size = binary -> symbols.size();
     std::cout << "The size of the symbol vector is: " << size << std::endl;
     for(int i = 0; i < size; i++)
     {
-        std::cout << symbol -> symbols[i].get_sym_name() << "     " << symbol -> symbols[i].get_sym_addr() << std::endl;
+        std::cout << binary -> symbols[i].sym_type << "   " << binary -> symbols[i].get_sym_name() << "   " << "0x" << binary -> symbols[i].get_sym_addr() << std::endl;
+        // std::cout << symbol -> symbols[i].get_sym_name() << "     " << symbol -> symbols[i].get_sym_addr() << std::endl;
     }
+
+    Section *section = new Section(binary);
+
+    int ret_sections = section -> load_section();
+    std::cout << "The return value of Load section is: " << ret_sections << std::endl; 
 
     return 0;
 }
