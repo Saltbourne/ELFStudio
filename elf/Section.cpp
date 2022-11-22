@@ -37,14 +37,31 @@ int Section::load_section()
 
         //fill the class object with the data
         sectionBinary -> sections[sectionBinary -> sections.size() - 1].set_section_size(bfd_section_size(store_section));
+        std::cout << "Section Size : " << sectionBinary -> sections[sectionBinary -> sections.size() - 1].get_section_size() << std::endl;
         sectionBinary -> sections[sectionBinary -> sections.size() - 1].set_virt_address(bfd_section_vma(store_section));
-        // sectionBinary -> sections[sectionBinary -> sections.size() - 1].set_bytes();
+        uint8_t *stuff = new (std::nothrow)uint8_t[sectionBinary -> sections[sectionBinary -> sections.size() - 1].get_section_size()]; //to be used for bytes later.
+
+        std::cout << "Section bytes: " << stuff << std::endl;
+        if(stuff == nullptr)
+        {
+            std::cout << "No bytes contents for " << sectionBinary -> sections[sectionBinary -> sections.size() - 1].get_section_name() << std::endl;
+        }
+        sectionBinary -> sections[sectionBinary -> sections.size() - 1].set_bytes((stuff));
+        delete stuff;
+
+        // std::cout << "Section line 46" << std::endl;
+
+        if(!bfd_get_section_contents(sectionBinary -> storebfd, store_section, sectionBinary -> sections[sectionBinary -> sections.size() - 1].get_bytes(), 0, sectionBinary -> sections[sectionBinary -> sections.size() - 1].get_section_size()))
+        {
+            std::cerr << "Failed to read the section. There is no memory for this section. " << get_section_name() << std::endl;
+        }
     }
+
     return 1;
 }
 
 //Getter functions
-std::string get_section_name() const
+std::string Section::get_section_name() const
 {
     return this -> section_name;
 }

@@ -36,13 +36,16 @@ public:
     //load the Symbols
     int load_static_symbols();
     int load_dynamic_symbols();
+    std::string demangle_symbol();
 
     //Getter functions
     std::string get_sym_name() const;
+    std::string get_demangled_name() const;
     uint64_t get_sym_addr() const;
 
     //Setter functions
     void set_sym_name(std::string symbol_name);
+    void set_demangled_name(std::string demangled_name);
     void set_sym_addr(uint64_t symbol_address);
 
 
@@ -50,5 +53,6 @@ public:
 private:
 
     std::string     sym_name;
+    std::string     demangled_name;
     uint64_t        sym_addr;
 };

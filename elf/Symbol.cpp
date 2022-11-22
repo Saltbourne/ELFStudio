@@ -1,4 +1,5 @@
 #include "Symbol.h"
+#include <cxxabi.h>
 
 
 int Symbol::load_static_symbols()
@@ -55,18 +56,20 @@ int Symbol::load_static_symbols()
                 symbolBinary -> symbols[symbolBinary -> symbols.size() - 1].set_sym_addr(bfd_asymbol_value(symbol_table[i]));
             }
         }
+        std::cout << "Symbol line 58 " << std::endl;
     }
     
     //store the symbol table in the class
     this -> store_static_symbols = symbol_table;
     // free(symbol_table);
-    // delete[] symbol_table;
+    delete[] symbol_table;
+    std::cout << "The static table of symbols has finished loading. " << std::endl;
     return 1;
 }
 
 int Symbol::load_dynamic_symbols()
 {
-    Symbol *symbol;
+    // Symbol *symbol;
     asymbol **dynamic_table;
 
     dynamic_table = nullptr;
@@ -78,7 +81,8 @@ int Symbol::load_dynamic_symbols()
         return -1;
     } else if(num_dy_symbols)
     {
-        dynamic_table = (asymbol**)malloc(num_dy_symbols);
+        // dynamic_table = (asymbol**)malloc(num_dy_symbols);
+        asymbol **dynamic_table = new asymbol *[num_dy_symbols];
         if(!dynamic_table)
         {
             std::cerr << "Memory failed to load for the dynamic symbol table. " << std::endl;
@@ -91,7 +95,7 @@ int Symbol::load_dynamic_symbols()
             std::cerr << bfd_errmsg(bfd_get_error()) << std::endl;
             return -3;
         }
-
+        std::cout << "Symbol LIne 94. " << std::endl;
         for(long i = 0; i < num_dy_symbols; i++)
         {
             if(dynamic_table[i] -> flags & BSF_FUNCTION)
@@ -101,15 +105,76 @@ int Symbol::load_dynamic_symbols()
                 symbolBinary -> symbols[symbolBinary -> symbols.size() - 1].sym_type = FUNCTION;
                 symbolBinary -> symbols[symbolBinary -> symbols.size() - 1].set_sym_name(std::string(dynamic_table[i] -> name));
                 symbolBinary -> symbols[symbolBinary -> symbols.size() - 1].set_sym_addr(bfd_asymbol_value(dynamic_table[i]));
+
+                // symbolBinary -> symbols[symbolBinary -> symbols.size() - 1].set_demangled_name(std::string(dynamic_table[i] -> name));
+                symbolBinary -> symbols[symbolBinary -> symbols.size() - 1].set_demangled_name(symbolBinary -> symbols[symbolBinary -> symbols.size() - 1].demangle_symbol());
+                // std::cout << "Demangled Name: " << symbolBinary -> symbols[symbolBinary -> symbols.size() - 1].get_demangled_name() << std::endl;
+
             }
         }
     }
 
     //store the dynamic symbol table in the symbol class.
-    symbol -> store_dynamic_symbols = dynamic_table;
+    // asymbol **dynamic_table = new asymbol *[num_dy_symbols];
+    // asymbol symbol -> store_dynamic_symbols = new asymbol*[num_dy_symbols];
+    this -> store_dynamic_symbols = dynamic_table;
     delete[] dynamic_table;
     // free(dynamic_table);
+    std::cout << "Dynamic Symbol table is finished loading." << std::endl;
     return 1;
+}
+
+std::string Symbol::demangle_symbol()
+{
+    int status;
+
+    // std::cout << "Symbol line 130. " << std::endl;
+    // const char* name = symbolBinary -> symbols[symbolBinary -> symbols.size() - 1].set_demangled_name(bfd_demangle(symbolBinary -> storebfd, symbolBinary -> symbols[symbolBinary -> symbols.size() - 1].get_sym_name().data(), status));
+    // const char *name = this -> get_sym_name().c_str();
+    std::cout << "Symbol mangled name: " << this -> get_sym_name() << std::endl;
+    
+    // symbolBinary -> symbols.back().get_sym_name();
+    // std::cout << "Symbol line 136. After const char name" << std::endl;
+    const char *tempPtr = new char[this -> get_sym_name().length() + 1];
+    tempPtr = this -> get_sym_name().c_str();
+    // const char *sym = this -> get_sym_name().data();
+    
+    // for(int i = 0; i != '\0'; i++)
+    // {
+    //     std::cout << tempPtr[i];
+    // }
+    std::cout << std::endl;
+    // std::cout << "Temp ptr: " << tempPtr << std::endl;
+
+    // std::string convert(tempPtr);
+    // std::string convert = std::string(tempPtr);
+    char *charArray = new char[this -> get_sym_name().length()];
+    std::string name = this -> get_sym_name();
+    if(name.empty())
+    {
+        return "empty string";
+    }
+    // std::cout << "Converted char pointer to string: " << convert << std::endl;
+    for(int i = 0; i < name.length(); i++)
+    {
+        charArray[i] = name[i];
+    }
+    
+    std::cout << "Symbol line 159.  After Manually converting string to char*:  " << charArray << std::endl;
+    
+    const char *test = charArray;
+    char *realname;
+    realname = abi::__cxa_demangle(test, 0, 0, &status);
+    // char *test_demangle = bfd_demangle(bfd_test, test, status);
+    std::cout << "Test demangle: **********************  " << realname << std::endl;
+    if(realname == nullptr)
+    {
+        return "Empty String";
+    }
+    // delete charArray;
+    // delete tempPtr;
+    
+    return realname;
 }
 
 //Getter functions
@@ -123,10 +188,20 @@ uint64_t Symbol::get_sym_addr() const
     return this -> sym_addr;
 }
 
+std::string Symbol::get_demangled_name() const
+{
+    return this -> demangled_name;
+}
+
 //Setter functions
 void Symbol::set_sym_name(std::string symbol_name)
 {
     this -> sym_name = symbol_name;
+}
+
+void Symbol::set_demangled_name(std::string demangled_name)
+{
+    this -> demangled_name = demangled_name;
 }
 
 void Symbol::set_sym_addr(uint64_t sym_addr)
