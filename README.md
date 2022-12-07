@@ -12,3 +12,6 @@ Qt creator installation instructions:
 libraries needed:
 
 CMakelist
+
+To Run ELFStudio, enter the following command:
+>ELFStudio -lbfd
