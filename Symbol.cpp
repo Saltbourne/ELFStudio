@@ -28,7 +28,7 @@ int Symbol::load_static_symbols()
             std::cerr << "There is no memory for the symbol table. " << std::endl;
             QErrorMessage err;
             err.showMessage("There is no memory for the symbol table.");
-            std::cout << "Symbol Line 32" << std::endl;
+            
             delete[] symbol_table;
             return -2;
         }
@@ -131,23 +131,20 @@ void Symbol::demangle_symbol(std::string name, unsigned long len)
     }
     int status;
 
-    std::cout << "Symbol mangled name: " << name << std::endl;
-
     char *realname;
     realname = abi::__cxa_demangle(name.c_str(), 0, nullptr, &status);
 
     if(realname == nullptr)
     {
-        std::cout << "line 152" << std::endl;
-        std::cout << "Demangle end" << std::endl;
+        
         std::cout << name << std::endl;
         this->set_demangled_name(name);
         std::cout << this->get_demangled_name() << std::endl;
         return;
     }
-    std::cout << "Test demangle: **********************  " << realname << std::endl;
+    
     std::string str(realname);
-    std::cout << "line 162" << std::endl;
+    
     free(realname);
     this->demangle_symbol(str, str.length());
 }
