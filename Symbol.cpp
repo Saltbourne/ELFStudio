@@ -7,13 +7,10 @@ int Symbol::load_static_symbols()
 {
     asymbol **symbol_table = nullptr;
 
-    std::cout << "Symbol Line 8" << std::endl;
-
     symbol_table = nullptr;
-    std::cout << "Symbol Line 12" << std::endl;
 
     long storage_needed = bfd_get_symtab_upper_bound(this -> symbolBinary -> storebfd);
-    std::cout << "Symbol Line 15" << std::endl;
+    
     if(storage_needed < 0)
     {
         std::cerr << "The symbol table is empty or failed to read the symbol table. " << std::endl;
@@ -25,7 +22,7 @@ int Symbol::load_static_symbols()
     } else if(storage_needed)
     {
         asymbol **symbol_table = new asymbol *[storage_needed];
-        std::cout << "Symbol Line 27" << std::endl;
+        
         if(!symbol_table)
         {
             std::cerr << "There is no memory for the symbol table. " << std::endl;
@@ -35,9 +32,9 @@ int Symbol::load_static_symbols()
             delete[] symbol_table;
             return -2;
         }
-        std::cout << "Symbol Line 36" << std::endl;
+        
         long number_symbols = bfd_canonicalize_symtab(symbolBinary -> storebfd, symbol_table);
-        std::cout << "Symbol Line 38" << std::endl;
+        
         if(number_symbols <= 0)
         {
             std::cerr << "There are no symbols in the table.  The table could have been stripped." << std::endl;
@@ -46,25 +43,24 @@ int Symbol::load_static_symbols()
             delete[] symbol_table;
             return -3;
         }
-        std::cout << "HELLOOOOOOOO " << number_symbols << std::endl;
+        
         for(long i = 0; i < number_symbols; i++)
         {
             if(symbol_table[i] -> flags & BSF_FUNCTION)
             {
                 symbolBinary -> symbols.push_back(Symbol());
-                symbolBinary -> symbols[symbolBinary -> symbols.size() - 1].sym_type = FUNCTION;
-                symbolBinary -> symbols[symbolBinary -> symbols.size() - 1].set_sym_name(std::string(symbol_table[i] -> name));
-                symbolBinary -> symbols[symbolBinary -> symbols.size() - 1].set_sym_addr(bfd_asymbol_value(symbol_table[i]));
-                symbolBinary -> symbols[symbolBinary -> symbols.size() - 1].demangle_symbol(symbolBinary -> symbols[symbolBinary -> symbols.size() - 1].get_sym_name(), symbolBinary -> symbols[symbolBinary -> symbols.size() - 1].get_sym_name().length());
+                symbolBinary -> symbols.back().sym_type = FUNCTION;
+                symbolBinary -> symbols.back().set_sym_name(std::string(symbol_table[i] -> name));
+                symbolBinary -> symbols.back().set_sym_addr(bfd_asymbol_value(symbol_table[i]));
+                symbolBinary -> symbols.back().demangle_symbol(symbolBinary -> symbols[symbolBinary -> symbols.size() - 1].get_sym_name(), symbolBinary -> symbols[symbolBinary -> symbols.size() - 1].get_sym_name().length());
             }
         }
-        std::cout << "Symbol line 58 " << std::endl;
     }
 
     //store the symbol table in the class
     this -> store_static_symbols = symbol_table;
     delete[] symbol_table;
-    std::cout << "The static table of symbols has finished loading. " << std::endl;
+    
     return 1;
 }
 
@@ -106,18 +102,18 @@ int Symbol::load_dynamic_symbols()
             if(dynamic_table[i] -> flags & BSF_FUNCTION)
             {
                 symbolBinary -> symbols.push_back(Symbol());
-                symbolBinary -> symbols[symbolBinary -> symbols.size() - 1].sym_type = FUNCTION;
-                symbolBinary -> symbols[symbolBinary -> symbols.size() - 1].set_sym_name(std::string(dynamic_table[i] -> name));
-                symbolBinary -> symbols[symbolBinary -> symbols.size() - 1].set_sym_addr(bfd_asymbol_value(dynamic_table[i]));
-                std::cout << std::string(dynamic_table[i] -> name) << std::endl;
-                symbolBinary -> symbols[symbolBinary -> symbols.size() - 1].demangle_symbol(symbolBinary -> symbols[symbolBinary -> symbols.size() - 1].get_sym_name(), symbolBinary -> symbols[symbolBinary -> symbols.size() - 1].get_sym_name().length());
+                symbolBinary -> symbols.back().sym_type = FUNCTION;
+                symbolBinary -> symbols.back().set_sym_name(std::string(dynamic_table[i] -> name));
+                symbolBinary -> symbols.back().set_sym_addr(bfd_asymbol_value(dynamic_table[i]));
+                
+                symbolBinary -> symbols.back().demangle_symbol(symbolBinary -> symbols.back().get_sym_name(), symbolBinary -> symbols.back().get_sym_name().length());
 
             }
         }
     }
     this -> store_dynamic_symbols = dynamic_table;
     delete[] dynamic_table;
-    std::cout << "Dynamic Symbol table is finished loading." << std::endl;
+    
     return 1;
 }
 
